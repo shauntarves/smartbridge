@@ -120,7 +120,7 @@ class WyzeBulb(WyzeSwitchableDevice, BaseBulb):
             raise InvalidValueException('color_temp', value)
 
         self._set_property('color_temp', value)
-        self._provider.bulb.set_color_temp(self.mac, self.model, value)
+        self._provider.bulb.set_color_temp(self, value)
 
     @property
     def away_mode(self):
@@ -167,7 +167,7 @@ class WyzeBulb(WyzeSwitchableDevice, BaseBulb):
             raise InvalidValueException('brightness', value)
 
         self._set_property('brightness', value)
-        self._provider.bulb.brightness(self.mac, self.model, value)
+        self._provider.bulb.set_brightness(self, value)
 
     def switch_on_props():
         return { WyzeBulb.props().get('switch_state')[0]: "1" }

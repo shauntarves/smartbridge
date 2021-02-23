@@ -45,7 +45,7 @@ class WyzeBulbService(BaseBulbService):
         except ProviderConnectionException:
             return None
 
-    def set_color_temp(self, bulb, value:int):
+    def set_color_temp(self, bulb, value: int):
         pid = WyzeBulb.color_temp_pid()
         if pid is not None:
             try:
