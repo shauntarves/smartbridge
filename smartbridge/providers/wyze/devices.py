@@ -116,7 +116,7 @@ class WyzeBulb(WyzeSwitchableDevice, BaseBulb):
         if value is None or not isinstance(value, int):
             raise InvalidParamException('color_temp', value)
 
-        if value < 1800 or value > 6500:
+        if value < 2700 or value > 6500:
             raise InvalidValueException('color_temp', value)
 
         self._set_property('color_temp', value)

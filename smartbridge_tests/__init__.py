@@ -1,5 +1,5 @@
 import unittest
-from .wyze_provider_tests import TestLogin
+from .wyze_provider_tests import *
 from os.path import join, dirname
 from dotenv import load_dotenv
 
