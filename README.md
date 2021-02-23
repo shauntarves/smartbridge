@@ -35,4 +35,4 @@ provider = ProviderFactory().create_provider(ProviderList.WYZE, config)
 print(provider.plug.list())
 ```
 
-The exact same command (as well as any other CloudBridge method) will run with any of the supported providers: `ProviderList.[WYZE]`!
+The exact same command (as well as any other SmartBridge method) will run with any of the supported providers: `ProviderList.[WYZE]`!
