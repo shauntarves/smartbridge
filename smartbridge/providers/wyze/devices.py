@@ -53,7 +53,7 @@ class WyzeDevice(BaseDevice):
     @property
     def name(self):
         return self._device['nickname']
-    
+
     @abstractmethod
     def _set_property(self, name, value):
         pass
@@ -70,15 +70,15 @@ class WyzeNetworkedDevice(WyzeDevice, BaseNetworkedDevice):
 
     @property
     def ip(self):
-      return self._get_property('ip')
+        return self._get_property('ip')
 
     @property
     def rssi(self):
-      return self._get_property('rssi')
+        return self._get_property('rssi')
 
     @property
     def ssid(self):
-      return self._get_property('ssid')
+        return self._get_property('ssid')
 
 
 class WyzeSwitchableDevice(WyzeNetworkedDevice, BaseSwitchableDevice):
@@ -88,13 +88,13 @@ class WyzeSwitchableDevice(WyzeNetworkedDevice, BaseSwitchableDevice):
 
     @property
     def switch_state(self):
-      return self._get_property('switch_state')
-    
+        return self._get_property('switch_state')
+
     @property
     @abstractmethod
     def switch_on_props(self):
         pass
-    
+
     @property
     @abstractmethod
     def switch_off_props(self):
@@ -131,7 +131,7 @@ class WyzeBulb(WyzeSwitchableDevice, BaseBulb):
 
     def switch_off_props():
         return {"P3": "0"}
-    
+
     @staticmethod
     def props():
         return {
@@ -141,7 +141,7 @@ class WyzeBulb(WyzeSwitchableDevice, BaseBulb):
             "P1612": ("rssi", "str"),
             "P1614": ("away_mode", "str"),
         }
-    
+
     @staticmethod
     def pids():
         return list(WyzeBulb.props().keys())
@@ -164,7 +164,7 @@ class WyzeBulb(WyzeSwitchableDevice, BaseBulb):
                     return property['value']
         elif 'device_params' in self._device and name in self._device['device_params']:
             return self._device['device_params'][name]
-        
+
         return default
 
 
@@ -178,7 +178,7 @@ class WyzePlug(WyzeSwitchableDevice, BasePlug):
 
     def switch_off_props():
         return {"P3": "0"}
-    
+
     @staticmethod
     def props():
         return {
@@ -188,7 +188,7 @@ class WyzePlug(WyzeSwitchableDevice, BasePlug):
             "P1612": ("rssi", "str"),
             "P1614": ("away_mode", "str"),
         }
-    
+
     @staticmethod
     def pids():
         return list(WyzePlug.props().keys())
@@ -211,9 +211,9 @@ class WyzePlug(WyzeSwitchableDevice, BasePlug):
                     return property['value']
         elif 'device_params' in self._device and name in self._device['device_params']:
             return self._device['device_params'][name]
-        
+
         return default
-    
+
 
 class WyzeVacuum(WyzeDevice, BaseVacuum):
 
@@ -263,13 +263,16 @@ class WyzeVacuum(WyzeDevice, BaseVacuum):
 
     @property
     def suction_level(self):
-        return self._suction_levels.get(self._get_property('cleanlevel'), VacuumSuction.STANDARD)
+        return self._suction_levels.get(
+            self._get_property('cleanlevel'),
+            VacuumSuction.STANDARD)
 
     @suction_level.setter
     def suction_level(self, value: VacuumSuction):
         if value is not None:
             self._set_property('cleanlevel', value.code)
-            self._provider.vacuum.set_suction_level(self.mac, self.model, self.suction_level.code)
+            self._provider.vacuum.set_suction_level(
+                self.mac, self.model, self.suction_level.code)
 
     def _get_property(self, name, default=None):
         if name in self._device:
@@ -283,7 +286,7 @@ class WyzeVacuum(WyzeDevice, BaseVacuum):
             return self._device['props'][name]
         elif 'settings' in self._device and name in self._device['settings']:
             return self._device['settings'][name]
-        
+
         return default
 
     def _set_property(self, name, value):
@@ -302,11 +305,11 @@ class WyzeVacuum(WyzeDevice, BaseVacuum):
     @property
     def battery(self):
         return self._get_property('battary')
-  
+
     @property
     def mode(self):
         return self._modes.get(self._get_property('mode'), VacuumMode.IDLE)
-    
+
     @staticmethod
     def props():
         return {
@@ -343,7 +346,7 @@ class WyzeVacuum(WyzeDevice, BaseVacuum):
             'control_type': 1,
             'event_id': 'WRV_SETTINGS_SUCTION'
         }
-    
+
     @staticmethod
     def device_info_props():
         return {
@@ -352,28 +355,29 @@ class WyzeVacuum(WyzeDevice, BaseVacuum):
             "device_type": ("device_type", "str"),
             "mcu_sys_version": ("mcu_sys_version", "str"),
         }
-    
+
     @staticmethod
     def device_info_pids():
         return [pid for pid in WyzeVacuum.device_info_props().keys()]
-    
+
     @staticmethod
     def pids():
         return [pid for pid in WyzeVacuum.props().keys()]
 
     @property
     def ip(self):
-      return self._get_property('ipaddr')
+        return self._get_property('ipaddr')
 
     @property
     def ssid(self):
-      raise NotImplementedError()
+        raise NotImplementedError()
+
 
 class WyzeSensor(WyzeDevice, BaseSensor):
 
     def __init__(self, provider, sensor):
-      super(BaseSensor, self).__init__(provider, sensor)
-    
+        super(BaseSensor, self).__init__(provider, sensor)
+
     @staticmethod
     def props():
         return {
@@ -382,11 +386,12 @@ class WyzeSensor(WyzeDevice, BaseSensor):
             "P1304": ("voltage", "str"),
         }
 
+
 class WyzeContactSensor(WyzeSensor, BaseContactSensor):
 
     def __init__(self, provider, sensor):
-      super(WyzeContactSensor, self).__init__(provider, sensor)
-    
+        super(WyzeContactSensor, self).__init__(provider, sensor)
+
     @staticmethod
     def props():
         return {
@@ -397,11 +402,12 @@ class WyzeContactSensor(WyzeSensor, BaseContactSensor):
             "P1329": ("voltage", "str"),
         }
 
+
 class WyzeMotionSensor(WyzeSensor, BaseMotionSensor):
 
     def __init__(self, provider, sensor):
-      super(WyzeMotionSensor, self).__init__(provider, sensor)
-    
+        super(WyzeMotionSensor, self).__init__(provider, sensor)
+
     @staticmethod
     def props():
         return {
