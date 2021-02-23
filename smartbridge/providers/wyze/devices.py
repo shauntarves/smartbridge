@@ -7,6 +7,7 @@ import logging
 
 from smartbridge.interfaces.devices import VacuumMode
 from smartbridge.interfaces.devices import VacuumSuction
+from smartbridge.interfaces.exceptions import InvalidParamException, InvalidValueException
 from smartbridge.base.devices import BaseDevice
 from smartbridge.base.devices import BaseNetworkedDevice
 from smartbridge.base.devices import BaseSwitchableDevice
@@ -112,29 +113,46 @@ class WyzeBulb(WyzeSwitchableDevice, BaseBulb):
 
     @color_temp.setter
     def color_temp(self, value: int):
-        if value is not None:
-            self._set_property('color_temp', value)
-            self._provider.bulb.set_color_temp(self.mac, self.model, value)
+        if value is None or not isinstance(value, int):
+            raise InvalidParamException('color_temp', value)
+
+        if value < 1800 or value > 6500:
+            raise InvalidValueException('color_temp', value)
+
+        self._set_property('color_temp', value)
+        self._provider.bulb.set_color_temp(self.mac, self.model, value)
 
     @property
     def away_mode(self):
         return self._get_property('away_mode')
 
-    @color_temp.setter
+    @away_mode.setter
     def away_mode(self, value: str):
-        if value is not None:
-            self._set_property('away_mode', value)
-            self._provider.bulb.set_away_mode(self.mac, self.model, value)
+        if value is None or not isinstance(value, str):
+            raise InvalidParamException('away_mode', value)
+        
+        # setting away mode to true requires complicated rules and actions
+        # so we only allow turning it off for now
+        if value != 0: 
+            raise InvalidValueException('away_mode', value)
+
+        self._set_property('away_mode', value)
+        self._provider.bulb.set_away_mode(self.mac, self.model, value)
 
     @property
     def power_loss_recovery(self):
         return self._get_property('power_loss_recovery')
 
-    @color_temp.setter
+    @power_loss_recovery.setter
     def power_loss_recovery(self, value: int):
-        if value is not None:
-            self._set_property('power_loss_recovery', value)
-            self._provider.bulb.set_power_loss_recovery(self.mac, self.model, value)
+        if value is None or not isinstance(value, int):
+            raise InvalidParamException('power_loss_recovery', value)
+
+        if value != 0 or value != 1:
+            raise InvalidValueException('power_loss_recovery', value)
+
+        self._set_property('power_loss_recovery', value)
+        self._provider.bulb.set_power_loss_recovery(self.mac, self.model, value)
 
     @property
     def brightness(self):
@@ -142,9 +160,14 @@ class WyzeBulb(WyzeSwitchableDevice, BaseBulb):
 
     @brightness.setter
     def brightness(self, value: int):
-        if value is not None:
-            self._set_property('brightness', value)
-            self._provider.bulb.brightness(self.mac, self.model, value)
+        if value is None or not isinstance(value, int):
+            raise InvalidParamException('brightness', value)
+
+        if value < 0 or value > 100:
+            raise InvalidValueException('brightness', value)
+
+        self._set_property('brightness', value)
+        self._provider.bulb.brightness(self.mac, self.model, value)
 
     def switch_on_props():
         return { WyzeBulb.props().get('switch_state')[0]: "1" }
