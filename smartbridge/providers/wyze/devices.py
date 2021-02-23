@@ -110,15 +110,35 @@ class WyzeBulb(WyzeSwitchableDevice, BaseBulb):
     def color_temp(self):
         return self._get_property('color_temp')
 
-    @property
-    def brightness(self):
-        return self._get_property('brightness')
-
     @color_temp.setter
     def color_temp(self, value: int):
         if value is not None:
             self._set_property('color_temp', value)
             self._provider.bulb.set_color_temp(self.mac, self.model, value)
+
+    @property
+    def away_mode(self):
+        return self._get_property('away_mode')
+
+    @color_temp.setter
+    def away_mode(self, value: str):
+        if value is not None:
+            self._set_property('away_mode', value)
+            self._provider.bulb.set_away_mode(self.mac, self.model, value)
+
+    @property
+    def power_loss_recovery(self):
+        return self._get_property('power_loss_recovery')
+
+    @color_temp.setter
+    def power_loss_recovery(self, value: int):
+        if value is not None:
+            self._set_property('power_loss_recovery', value)
+            self._provider.bulb.set_power_loss_recovery(self.mac, self.model, value)
+
+    @property
+    def brightness(self):
+        return self._get_property('brightness')
 
     @brightness.setter
     def brightness(self, value: int):
@@ -127,24 +147,33 @@ class WyzeBulb(WyzeSwitchableDevice, BaseBulb):
             self._provider.bulb.brightness(self.mac, self.model, value)
 
     def switch_on_props():
-        return {"P3": "1"}
+        return { WyzeBulb.props().get('switch_state')[0]: "1" }
 
     def switch_off_props():
-        return {"P3": "0"}
+        return { WyzeBulb.props().get('switch_state')[0]: "0" }
+
+    def brightness_pid():
+        return WyzeBulb.props().get('brightness')[0]
+
+    def color_temp_pid():
+        return WyzeBulb.props().get('color_temp')[0]
 
     @staticmethod
     def props():
         return {
-            "P3": ("switch_state", "int"),
-            "P5": ("available", "int"),
-            "P13": ("status_light", "int"),
-            "P1612": ("rssi", "str"),
-            "P1614": ("away_mode", "str"),
+            "switch_state": ("P3", "int"),
+            "available": ("P5", "int"),
+            "brightness": ("P1501", "int"),
+            "color_temp": ("P1502", "int"),
+            # "": ("P1503", ""), not used?
+            # "": ("P1505", ""), not used?
+            "away_mode": ("P1506", "str"),
+            "power_loss_recovery": ("P1509", "int"),
         }
 
     @staticmethod
     def pids():
-        return list(WyzeBulb.props().keys())
+        return [prop[0] for prop in WyzeBulb.props().values()]
 
     def _set_property(self, name, value):
         if name in self._device:
@@ -159,8 +188,8 @@ class WyzeBulb(WyzeSwitchableDevice, BaseBulb):
             return self._device[name]
         elif 'data' in self._device and 'property_list' in self._device['data']:
             for property in self._device['data']['property_list']:
-                prop_def = WyzeBulb.props().get(property['pid'])
-                if (prop_def[0] == name):
+                prop_def = WyzeBulb.props().get(name)
+                if (prop_def[0] == property['pid']):
                     return property['value']
         elif 'device_params' in self._device and name in self._device['device_params']:
             return self._device['device_params'][name]
@@ -174,24 +203,24 @@ class WyzePlug(WyzeSwitchableDevice, BasePlug):
         super(WyzePlug, self).__init__(provider, plug)
 
     def switch_on_props():
-        return {"P3": "1"}
+        return { WyzePlug.props().get('switch_state')[0]: "1" }
 
     def switch_off_props():
-        return {"P3": "0"}
+        return { WyzePlug.props().get('switch_state')[0]: "0" }
 
     @staticmethod
     def props():
         return {
-            "P3": ("switch_state", "int"),
-            "P5": ("available", "int"),
-            "P13": ("status_light", "int"),
-            "P1612": ("rssi", "str"),
-            "P1614": ("away_mode", "str"),
+            "switch_state": ("P3", "int"),
+            "available": ("P5", "int"),
+            "status_light": ("P13", "int"),
+            "rssi": ("P1612", "str"),
+            "away_mode": ("P1614", "str"),
         }
 
     @staticmethod
     def pids():
-        return list(WyzePlug.props().keys())
+        return [prop[0] for prop in WyzePlug.props().values()]
 
     def _set_property(self, name, value):
         if name in self._device:
@@ -206,8 +235,8 @@ class WyzePlug(WyzeSwitchableDevice, BasePlug):
             return self._device[name]
         elif 'data' in self._device and 'property_list' in self._device['data']:
             for property in self._device['data']['property_list']:
-                prop_def = WyzePlug.props().get(property['pid'])
-                if (prop_def[0] == name):
+                prop_def = WyzePlug.props().get(name)
+                if (prop_def[0] == property['pid']):
                     return property['value']
         elif 'device_params' in self._device and name in self._device['device_params']:
             return self._device['device_params'][name]

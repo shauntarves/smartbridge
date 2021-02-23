@@ -780,7 +780,7 @@ class WyzeApiClient(WyzeServiceClient):
                 'device_mac': mac,
                 'device_model': model,
                 'pid': pid,
-                'pvalue': value,
+                'pvalue': str(value),
                 'sv': SV_SET_DEVICE_PROPERTY})
 
     def get_device_list_property_list(self, devices=[], target_pids=[]):

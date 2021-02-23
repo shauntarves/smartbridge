@@ -45,31 +45,29 @@ class WyzeBulbService(BaseBulbService):
         except ProviderConnectionException:
             return None
 
-    def set_color_temp(self, bulb, value):
-        props = WyzeBulb.color_temp_props()
-        if len(props) == 1:
-            prop = props.popitem()
+    def set_color_temp(self, bulb, value:int):
+        pid = WyzeBulb.color_temp_pid()
+        if pid is not None:
             try:
                 self.provider.wyze_client.set_bulb_property(
-                    bulb.mac, bulb.model, prop[0], prop[1])
-            except ProviderConnectionException:
-                return None
+                    bulb.mac, bulb.model, pid, value)
+            except ProviderConnectionException as e:
+                raise e
         else:
             raise InvalidValueException(
-                "color_temp_props() must return at least one property.")
+                "color_temp_pid() must return a value.")
 
-    def set_brightness(self, bulb, value):
-        props = WyzeBulb.brightness_props()
-        if len(props) == 1:
-            prop = props.popitem()
+    def set_brightness(self, bulb, value:int):
+        pid = WyzeBulb.brightness_pid()
+        if pid is not None:
             try:
                 self.provider.wyze_client.set_bulb_property(
-                    bulb.mac, bulb.model, prop[0], prop[1])
-            except ProviderConnectionException:
-                return None
+                    bulb.mac, bulb.model, pid, value)
+            except ProviderConnectionException as e:
+                raise e
         else:
             raise InvalidValueException(
-                "brightness_props() must return at least one property.")
+                "brightness_pid() must return a value.")
 
     def switch_on(self, bulb):
         props = WyzeBulb.switch_on_props()
@@ -78,8 +76,8 @@ class WyzeBulbService(BaseBulbService):
             try:
                 self.provider.wyze_client.set_bulb_property(
                     bulb.mac, bulb.model, prop[0], prop[1])
-            except ProviderConnectionException:
-                return None
+            except ProviderConnectionException as e:
+                raise e
         else:
             raise InvalidValueException(
                 "switch_on_props() must return at least one property.")
@@ -91,8 +89,8 @@ class WyzeBulbService(BaseBulbService):
             try:
                 self.provider.wyze_client.set_bulb_property(
                     bulb.mac, bulb.model, prop[0], prop[1])
-            except ProviderConnectionException:
-                return None
+            except ProviderConnectionException as e:
+                raise e
         else:
             raise InvalidValueException(
                 "switch_off_props() must return at least one property.")
