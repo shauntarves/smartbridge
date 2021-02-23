@@ -443,9 +443,10 @@ class WyzeSensor(WyzeDevice, BaseSensor):
     @staticmethod
     def props():
         return {
-            "P5": ("available", "int"),
-            "P1303": ("rssi", "str"),
-            "P1304": ("voltage", "str"),
+            "power_state": ("P3", "int"),
+            "available": ("P5", "int"),
+            "rssi": ("P1303", "str"),
+            "voltage": ("P1304", "str"),
         }
 
 
@@ -456,13 +457,11 @@ class WyzeContactSensor(WyzeSensor, BaseContactSensor):
 
     @staticmethod
     def props():
-        return {
-            "P3": ("power_state", "int"),
-            "P5": ("available", "int"),
-            "P1301": ("open_close_state", "str"),
-            "P1304": ("rssi", "str"),
-            "P1329": ("voltage", "str"),
-        }
+        return WyzeSensor.props.update({
+            "open_close_state": ("P1301", "str"),
+            "rssi": ("P1304", "str"),
+            "voltage": ("P1329", "str"),
+        })
 
 
 class WyzeMotionSensor(WyzeSensor, BaseMotionSensor):
@@ -472,10 +471,8 @@ class WyzeMotionSensor(WyzeSensor, BaseMotionSensor):
 
     @staticmethod
     def props():
-        return {
-            "P3": ("power_state", "int"),
-            "P5": ("available", "int"),
-            "P1302": ("motion_state", "str"),
-            "P1304": ("rssi", "str"),
-            "P1329": ("voltage", "str"),
-        }
+        return WyzeSensor.props.update({
+            "motion_state": ("P1302", "str"),
+            "rssi": ("P1304", "str"),
+            "voltage": ("P1329", "str"),
+        })
