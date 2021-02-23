@@ -66,7 +66,7 @@ class WyzeDevice(BaseDevice):
 class WyzeNetworkedDevice(WyzeDevice, BaseNetworkedDevice):
 
     def __init__(self, provider, device):
-        super(WyzeSwitchableDevice, self).__init__(provider, device)
+        super(WyzeNetworkedDevice, self).__init__(provider, device)
 
     @property
     def ip(self):
