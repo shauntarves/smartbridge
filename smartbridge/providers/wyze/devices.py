@@ -178,10 +178,20 @@ class WyzeBulb(WyzeSwitchableDevice, BaseBulb):
     def _set_property(self, name, value):
         if name in self._device:
             self._device[name] = value
-        elif 'data' in self._device and 'property_list' in self._device['data'] and name in self._device['data']['property_list']:
-            self._device['data']['property_list'][name] = value
+        elif 'data' in self._device and 'property_list' in self._device['data']:
+            if name in self._device['data']['property_list']:
+                self._device['data']['property_list'][name] = value
+            else:
+                prop_def = WyzeBulb.props().get(name)
+                if prop_def[0] in self._device['data']['property_list']:
+                    self._device['data']['property_list'][prop_def[0]] = value
         elif 'device_params' in self._device and name in self._device['device_params']:
-            self._device['device_params'][name] = value
+            if name in self._device['device_params']:
+                self._device['device_params'][name] = value
+            else:
+                prop_def = WyzeBulb.props().get(name)
+                if prop_def[0] in self._device['device_params']:
+                    self._device['device_params'][prop_def[0]] = value
 
     def _get_property(self, name, default=None):
         if name in self._device:
