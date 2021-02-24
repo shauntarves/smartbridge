@@ -430,10 +430,6 @@ class WyzeVacuum(WyzeDevice, BaseVacuum):
     def ip(self):
         return self._get_property('ipaddr')
 
-    @property
-    def ssid(self):
-        raise NotImplementedError()
-
 
 class WyzeSensor(WyzeDevice, BaseSensor):
 
