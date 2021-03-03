@@ -156,21 +156,39 @@ class WyzeVacuumService(BaseVacuumService):
             return WyzeVacuum(self.provider, vacuum)
         except ProviderConnectionException:
             return None
-
+    
     def clean(self, vacuum):
-        props = WyzeVacuum.clean_props()
-        if len(props) == 1:
-            prop = props.popitem()
-            try:
-                self.provider.wyze_client.set_vacuum_mode(
-                    vacuum.mac, vacuum.model, prop[0], prop[1])
-                self.provider.wyze_client.create_user_vacuum_event(
-                    'WRV_CLEAN', 1)
-            except ProviderConnectionException:
-                return None
-        else:
-            raise InvalidValueException(
-                "clean_props() must return at least one property.")
+        self.start(vacuum, [])
+
+    def start(self, vacuum, rooms = None):
+        if rooms is None:
+            props = WyzeVacuum.clean_props()
+            if len(props) == 1:
+                prop = props.popitem()
+                try:
+                    self.provider.wyze_client.set_vacuum_mode(
+                        vacuum.mac, vacuum.model, prop[0], prop[1])
+                    self.provider.wyze_client.create_user_vacuum_event(
+                        'WRV_CLEAN', 1)
+                except ProviderConnectionException:
+                    return
+            else:
+                raise InvalidValueException(
+                    "clean_props() must return at least one property.")
+            return
+        
+        try:
+            if not isinstance(rooms, list):
+                rooms = [rooms]
+
+            room_ids = [int(id) for id in rooms]
+            
+            self.provider.wyze_client.sweep_rooms(vacuum.mac, room_ids)
+        except ProviderConnectionException:
+            return
+        except ValueError:
+            raise InvalidValueException("rooms must be requested by numeric id")
+
 
     def pause(self, vacuum):
         props = WyzeVacuum.pause_props()

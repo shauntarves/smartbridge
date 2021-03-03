@@ -306,6 +306,17 @@ class Vacuum(NetworkedDevice):
 
     @property
     @abstractmethod
+    def rooms(self):
+        """
+        Get the Vacuum's known rooms.
+
+        :rtype: :class:`dict`
+        :return: a dict object
+        """
+        pass
+
+    @property
+    @abstractmethod
     def suction_level(self):
         """
         Get the Vacuum suction level.
@@ -338,7 +349,7 @@ class Vacuum(NetworkedDevice):
         pass
 
     @abstractmethod
-    def clean(self):
+    def clean(self, rooms):
         """
         Start the Vacuum.
         """

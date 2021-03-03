@@ -121,6 +121,10 @@ class WyzeClient(object):
             device_mac, device_model, 'set_mode', {
                 'type': type, 'value': value})
 
+    def sweep_rooms(self, device_mac, room_ids):
+        self.venus_client.sweep_room(
+            device_mac, room_ids)
+
     def set_vacuum_preference(
             self,
             device_mac,
@@ -266,7 +270,7 @@ class WyzeServiceClient(object):
                 if response_code != '1' and 'msg' in response_json and response_json[
                         'msg'] == 'AccessTokenError':
                     log.warning(
-                        "The user account is locked. Please resolve this issue and try again.")
+                        "The access token has expired. Please refresh the token and try again.")
                     raise ProviderConnectionException(
                         "Failed to login with response: {0}".format(response_json))
                 if response_code != '1' and 'msg' in response_json and response_json[
@@ -541,6 +545,17 @@ class WyzeVenusServiceClient(WyzeSignatureServiceClient):
                 'model': model,
                 'is_sub_device': is_sub_device,
                 'params': params,
+            })
+
+    def sweep_room(self, did, rooms=[]):
+        return self.post_to_server(
+            self.endpoint_url +
+            '/plugin/venus/sweeping',
+            payload={
+                'did': did,
+                'rooms_id': rooms,
+                'value': 1,
+                'type': 1,
             })
 
 

@@ -121,8 +121,8 @@ class BaseVacuum(BaseNetworkedDevice, Vacuum):
     def __init__(self, provider, vacuum):
         super(BaseVacuum, self).__init__(provider, vacuum)
 
-    def clean(self):
-        return self._provider.vacuum.clean(self)
+    def clean(self, rooms):
+        return self._provider.vacuum.start(self, rooms)
 
     def pause(self):
         return self._provider.vacuum.pause(self)

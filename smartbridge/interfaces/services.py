@@ -122,12 +122,14 @@ class VacuumService(DeviceService):
     __metaclass__ = ABCMeta
 
     @abstractmethod
-    def start(self, vacuum):
+    def start(self, vacuum, rooms):
         """
         Start a Vacuum.
 
         :type vacuum: ``str`` or :class:`.Vacuum`
         :param vacuum: The object or id of the vacuum to be started.
+        :type rooms: ``[str]``
+        :param rooms: The collection of room identifiers to clean.
         """
         pass
 

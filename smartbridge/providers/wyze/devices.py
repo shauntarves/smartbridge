@@ -3,6 +3,7 @@ DataTypes used by this provider
 """
 
 from abc import abstractmethod
+import base64
 import logging
 
 from smartbridge.interfaces.devices import VacuumMode
@@ -277,6 +278,15 @@ class WyzePlug(WyzeSwitchableDevice, BasePlug):
         return default
 
 
+class WyzeVacuumMapRoom(object):
+
+    def __init__(self, *, id = None, name = None, clean_state = None, room_clean = None, **others: dict):
+        self.id = id
+        self.name = name
+        self.clean_state = clean_state
+        self.room_clean = room_clean
+
+
 class WyzeVacuum(WyzeDevice, BaseVacuum):
 
     _modes = {
@@ -312,6 +322,86 @@ class WyzeVacuum(WyzeDevice, BaseVacuum):
         3: VacuumSuction.STRONG,
     }
 
+    """
+    The protobuf definition for a vacuum map
+    """
+    _robot_map_proto = {
+      '1': {'type': 'int', 'name': 'mapType_'},
+      '2': {'type': 'message', 'message_typedef': {
+        '1': {'type': 'int', 'name': 'taskBeginDate_'},
+        '2': {'type': 'int', 'name': 'mapUploadDate_'}
+        }, 'name': 'mapExtInfo_'},
+      '3': {'type': 'message', 'message_typedef': {
+        '1': {'type': 'int', 'name': 'mapHeadId_'},
+        '2': {'type': 'int', 'name': 'sizeX_'},
+        '3': {'type': 'int', 'name': 'sizeY_'},
+        '4': {'type': 'float', 'name': 'minX_'},
+        '5': {'type': 'float', 'name': 'minY_'},
+        '6': {'type': 'float', 'name': 'maxX_'},
+        '7': {'type': 'float', 'name': 'maxY_'},
+        '8': {'type': 'float', 'name': 'resolution_'}
+        }, 'name': 'mapHeadInfo_'},
+      '4': {'type': 'message', 'message_typedef': {
+        '1': {'type': 'bytes', 'name': 'mapData_'}
+        }, 'name': 'mapData_'},
+      '5': {'type': 'message', 'message_typedef': {
+        '1': {'type': 'int', 'name': 'mapHeadId_'},
+        '2': {'type': 'bytes', 'name': 'mapName_'}
+        }, 'name': 'mapInfo_'},
+      '6': {'type': 'message', 'message_typedef': {
+        '1': {'type': 'int', 'name': 'poseId_'},
+        '2': {'type': 'message', 'message_typedef': {
+          '1': {'type': 'int', 'name': 'update_'},
+          '2': {'type': 'float', 'name': 'x_'},
+          '3': {'type': 'float', 'name': 'y_'}
+          }, 'name': ''} # error when using points_
+        }, 'name': 'historyPose_'},
+      '7': {'type': 'message', 'message_typedef': {
+        '1': {'type': 'float', 'name': 'x_'},
+        '2': {'type': 'float', 'name': 'y_'},
+        '3': {'type': 'float', 'name': 'phi_'}
+        }, 'name': 'chargeStation_'},
+      '8': {'type': 'message', 'message_typedef': {
+        '1': {'type': 'int', 'name': 'poseId_'},
+        '2': {'type': 'int', 'name': 'update_'},
+        '3': {'type': 'float', 'name': 'x_'},
+        '4': {'type': 'float', 'name': 'y_'},
+        '5': {'type': 'float', 'name': 'phi_'}
+        }, 'name': 'currentPose_'},
+      '11': {'type': 'message', 'message_typedef': {
+        '1': {'type': 'int', 'name': 'pointId_'},
+        '2': {'type': 'int', 'name': 'status_'},
+        '3': {'type': 'int', 'name': 'pointType_'},
+        '4': {'type': 'float', 'name': 'x_'},
+        '5': {'type': 'float', 'name': 'y_'},
+        '6': {'type': 'float', 'name': 'phi_'}
+        }, 'name': 'navigationPoints_'},
+      '12': {'type': 'message', 'message_typedef': {
+        '1': {'type': 'int', 'name': 'roomId_'},
+        '2': {'type': 'bytes', 'name': 'roomName_'},
+        # '3': {'type': 'bytes', 'name': 'roomTypeId_'},
+        # '4': {'type': 'bytes', 'name': 'meterialId_'},
+        '5': {'type': 'int', 'name': 'cleanState_'},
+        '6': {'type': 'int', 'name': 'roomClean_'},
+        # '7': {'type': 'int', 'name': 'roomCleanIndex_'},
+        '8': {'type': 'message', 'message_typedef': {
+          '1': {'type': 'float', 'name': 'x_'},
+          '2': {'type': 'float', 'name': 'y_'}
+          }, 'name': 'roomNamePost_'}
+        }, 'name': ''}, # error when using roomDataInfo_
+      '13': {'type': 'message', 'message_typedef': {
+        '1': {'type': 'bytes', 'name': 'matrix_'}
+        }, 'name': 'roomMatrix_'},
+      '14': {'type': 'message', 'message_typedef': {
+        '1': {'type': 'int', 'name': 'room'},
+        '2': {'type': 'message', 'message_typedef': {
+          '1': {'type': 'int', 'name': 'x_'},
+          '2': {'type': 'int', 'name': 'y_'},
+          '3': {'type': 'int', 'name': 'value_'}
+          }, 'name': ''} # error when using points_
+        }, 'name': ''} # error when using roomChain_
+      }
+
     def __init__(self, provider, vacuum):
         super(WyzeVacuum, self).__init__(provider, vacuum)
 
@@ -321,7 +411,51 @@ class WyzeVacuum(WyzeDevice, BaseVacuum):
 
     @property
     def current_map(self):
-        return self._get_property('current_map')
+        """
+        This method returns a dictionary of map data after parsing the
+        protobuf using the above definition.
+        The map from the Wyze API is a zip-compressed base64-encoded
+        blob of data, so we have to decode it, unzip it, then base64-
+        encode it for parsing. Pain in the ass.
+        :rtype: ``dict``
+        :return: A dictionary of map properties
+        """
+        current_map = self._get_property('current_map')
+        if 'map' in current_map:
+            if isinstance(current_map['map'], str):
+                current_map['map'] = self.parse_map(current_map['map'])
+            return current_map['map']
+
+        return current_map
+
+    def parse_map(self, blob):
+        import base64
+        import binascii
+        import blackboxprotobuf
+        import json
+        import zlib
+
+        try:
+            compressed = base64.b64decode(blob)
+            if compressed is None:
+                raise InvalidValueException('current_map', '')
+
+            decompressed = zlib.decompress(compressed)
+
+            # add the protobuf definition to the known types
+            blackboxprotobuf.known_messages['robot_map'] = self._robot_map_proto
+            
+            # for some reason we have to re-encode and then re-decode the bytes
+            map, typedef = blackboxprotobuf.protobuf_to_json(base64.b64decode(base64.b64encode(decompressed)), 'robot_map')
+
+            return json.loads(map)
+        except (binascii.Error, zlib.error):
+                raise InvalidValueException('current_map', '')
+
+    @property
+    def rooms(self):
+        if '12' in self.current_map:
+            return [WyzeVacuumMapRoom(**room) for room in self.current_map['12']]
 
     @property
     def suction_level(self):
