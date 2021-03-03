@@ -548,14 +548,21 @@ class WyzeVenusServiceClient(WyzeSignatureServiceClient):
             })
 
     def sweep_room(self, did, rooms=[]):
+        """
+        The client command to sweep specific room(s). The rooms should
+        be specified as an array of integers, as identified by the
+        current map.
+
+        Ref: com.wyze.sweeprobot.model.request.VenusSweepByRoomRequest
+        """
         return self.post_to_server(
             self.endpoint_url +
             '/plugin/venus/sweeping',
             payload={
                 'did': did,
                 'rooms_id': rooms,
-                'value': 1,
                 'type': 1,
+                'value': 1,
             })
 
 

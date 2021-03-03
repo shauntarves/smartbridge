@@ -377,12 +377,12 @@ class WyzeVacuum(WyzeDevice, BaseVacuum):
         '6': {'type': 'float', 'name': 'phi_'}
         }, 'name': 'navigationPoints_'},
       '12': {'type': 'message', 'message_typedef': {
-        '1': {'type': 'int', 'name': 'roomId_'},
-        '2': {'type': 'bytes', 'name': 'roomName_'},
+        '1': {'type': 'int', 'name': 'id'}, #roomId_
+        '2': {'type': 'bytes', 'name': 'name'}, #roomName_
         # '3': {'type': 'bytes', 'name': 'roomTypeId_'},
         # '4': {'type': 'bytes', 'name': 'meterialId_'},
-        '5': {'type': 'int', 'name': 'cleanState_'},
-        '6': {'type': 'int', 'name': 'roomClean_'},
+        '5': {'type': 'int', 'name': 'clean_state'}, #cleanState_
+        '6': {'type': 'int', 'name': 'room_clean'}, #roomClean_
         # '7': {'type': 'int', 'name': 'roomCleanIndex_'},
         '8': {'type': 'message', 'message_typedef': {
           '1': {'type': 'float', 'name': 'x_'},
@@ -420,8 +420,8 @@ class WyzeVacuum(WyzeDevice, BaseVacuum):
         :rtype: ``dict``
         :return: A dictionary of map properties
         """
-        current_map = self._get_property('current_map')
-        if 'map' in current_map:
+        current_map = self._get_property('current_map', None)
+        if current_map is not None and 'map' in current_map:
             if isinstance(current_map['map'], str):
                 current_map['map'] = self.parse_map(current_map['map'])
             return current_map['map']
@@ -454,7 +454,7 @@ class WyzeVacuum(WyzeDevice, BaseVacuum):
 
     @property
     def rooms(self):
-        if '12' in self.current_map:
+        if self.current_map is not None and '12' in self.current_map:
             return [WyzeVacuumMapRoom(**room) for room in self.current_map['12']]
 
     @property
