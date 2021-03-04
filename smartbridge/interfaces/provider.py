@@ -126,3 +126,27 @@ class Provider(object):
         :return:  a BulbService object
         """
         pass
+
+    @abstractproperty
+    def contact_sensor(self):
+        """
+        Provides access to all contact sensor-related services in this provider.
+        Example:
+        .. code-block:: python
+            bulbs = provider.contact_sensor.list()
+        :rtype: :class:`.ContactSensorService`
+        :return:  a ContactSensorService object
+        """
+        pass
+
+    @abstractproperty
+    def motion_sensor(self):
+        """
+        Provides access to all motion sensor-related services in this provider.
+        Example:
+        .. code-block:: python
+            bulbs = provider.motion_sensor.list()
+        :rtype: :class:`.MotionSensorService`
+        :return:  a MotionSensorService object
+        """
+        pass

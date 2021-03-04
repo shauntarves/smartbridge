@@ -10,6 +10,9 @@ from smartbridge.interfaces.services import SwitchableDeviceService
 from smartbridge.interfaces.services import BulbService
 from smartbridge.interfaces.services import VacuumService
 from smartbridge.interfaces.services import PlugService
+from smartbridge.interfaces.services import SensorService
+from smartbridge.interfaces.services import ContactSensorService
+from smartbridge.interfaces.services import MotionSensorService
 
 log = logging.getLogger(__name__)
 
@@ -62,3 +65,24 @@ class BaseVacuumService(BaseDeviceService, VacuumService):
     def __init__(self, provider):
         super(BaseVacuumService, self).__init__(provider)
         self._service_event_pattern += ".vacuums"
+
+
+class BaseSensorService(BaseDeviceService, SensorService):
+
+    def __init__(self, provider):
+        super(BaseSensorService, self).__init__(provider)
+        self._service_event_pattern += ".sensors"
+
+
+class BaseContactSensorService(BaseSensorService, ContactSensorService):
+
+    def __init__(self, provider):
+        super(BaseContactSensorService, self).__init__(provider)
+        self._service_event_pattern += ".contact"
+
+
+class BaseMotionSensorService(BaseSensorService, MotionSensorService):
+
+    def __init__(self, provider):
+        super(BaseMotionSensorService, self).__init__(provider)
+        self._service_event_pattern += ".motion"

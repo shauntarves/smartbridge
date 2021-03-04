@@ -12,6 +12,8 @@ from .client import WyzeClient
 from .services import WyzeBulbService
 from .services import WyzePlugService
 from .services import WyzeVacuumService
+from .services import WyzeContactSensorService
+from .services import WyzeMotionSensorService
 
 log = logging.getLogger(__name__)
 
@@ -62,6 +64,8 @@ class WyzeProvider(BaseProvider):
         self._bulb = WyzeBulbService(self)
         self._plug = WyzePlugService(self)
         self._vacuum = WyzeVacuumService(self)
+        self._contact_sensor = WyzeContactSensorService(self)
+        self._motion_sensor = WyzeMotionSensorService(self)
 
     @property
     def wyze_client(self):
@@ -104,3 +108,11 @@ class WyzeProvider(BaseProvider):
     @property
     def bulb(self):
         return self._bulb
+
+    @property
+    def contact_sensor(self):
+        return self._contact_sensor
+
+    @property
+    def motion_sensor(self):
+        return self._motion_sensor

@@ -72,7 +72,7 @@ class DeviceService(ProviderService):
 class SwitchableDeviceService(DeviceService):
     """
     The switchable device service interface is a collection of services
-    that provides access to the underlying smart device services that
+    that provide access to the underlying smart device services that
     can be switched on and off in a provider.
     """
     __metaclass__ = ABCMeta
@@ -100,7 +100,7 @@ class SwitchableDeviceService(DeviceService):
 
 class PlugService(SwitchableDeviceService):
     """
-    The plug service interface is a collection of services that provides
+    The plug service interface is a collection of services that provide
     access to the underlying smart plug services in a provider.
     """
     __metaclass__ = ABCMeta
@@ -108,7 +108,7 @@ class PlugService(SwitchableDeviceService):
 
 class BulbService(SwitchableDeviceService):
     """
-    The bulb service interface is a collection of services that provides
+    The bulb service interface is a collection of services that provide
     access to the underlying smart bulb services in a provider.
     """
     __metaclass__ = ABCMeta
@@ -116,7 +116,7 @@ class BulbService(SwitchableDeviceService):
 
 class VacuumService(DeviceService):
     """
-    The vacuum service interface is a collection of services that provides
+    The vacuum service interface is a collection of services that provide
     access to the underlying smart vacuum services in a provider.
     """
     __metaclass__ = ABCMeta
@@ -156,7 +156,25 @@ class VacuumService(DeviceService):
 
 class SensorService(DeviceService):
     """
-    The sensor service interface is a collection of services that provides
+    The sensor service interface is a collection of services that provide
     access to the underlying smart sensor services in a provider.
+    """
+    __metaclass__ = ABCMeta
+
+
+class ContactSensorService(DeviceService):
+    """
+    The contact sensor service interface is a collection of services that
+    provide access to the underlying smart contact-sensor services in a
+    provider.
+    """
+    __metaclass__ = ABCMeta
+
+
+class MotionSensorService(DeviceService):
+    """
+    The motion sensor service interface is a collection of services that
+    provide access to the underlying smart motion-sensor services in a
+    provider.
     """
     __metaclass__ = ABCMeta

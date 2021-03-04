@@ -190,6 +190,46 @@ class WyzeClient(object):
         self.api_client.set_device_property(
             device_mac, device_model, name, value)
 
+    def _list_sensors(self, models):
+        return [device for device in self.list_devices(
+        ) if device['product_model'] in models]
+
+    def list_contact_sensors(self):
+        return self._list_sensors(DeviceModels.CONTACT_SENSOR)
+
+    def list_motion_sensors(self):
+        return self._list_sensors(DeviceModels.MOTION_SENSOR)
+    
+    def _get_sensor(self, device_mac, sensors):
+        _sensors = [_sensor for _sensor in sensors if _sensor['mac']
+                 == device_mac]
+        if len(_sensors) == 0:
+            return None
+        
+        _sensor = _sensors[0]
+        _sensor.update(
+            self.api_client.get_device_info(
+                _sensor['mac'],
+                _sensor['product_model']))
+
+        return _sensor
+
+    def get_contact_sensor(self, device_mac):
+        contact_sensor = self._get_sensor(device_mac, self.list_contact_sensors())
+
+        log.debug('returning contact sensor data')
+        log.debug(contact_sensor)
+
+        return contact_sensor
+
+    def get_motion_sensor(self, device_mac):
+        motion_sensor = self._get_sensor(device_mac, self.list_motion_sensors())
+
+        log.debug('returning motion sensor data')
+        log.debug(motion_sensor)
+
+        return motion_sensor
+
     def _create_user_event(self, pid, event_id, event_type):
         self.general_api_client.post_user_event(pid, event_id, event_type)
 
@@ -827,6 +867,17 @@ class WyzeApiClient(WyzeServiceClient):
                 'device_model': model,
                 'target_pid_list': target_pids,
                 'sv': SV_GET_DEVICE_PROPERTY_LIST})
+
+    def get_device_info(self, mac, model):
+        SV_GET_DEVICE_INFO = '81d1abc794ba45a39fdd21233d621e84'
+
+        return self.post_to_server(
+            self.endpoint_url +
+            '/app/v2/device/get_device_Info',
+            {
+                'device_mac': mac,
+                'device_model': model,
+                'sv': SV_GET_DEVICE_INFO})
 
     def get_object_list(self):
         SV_GET_DEVICE_LIST = 'c417b62d72ee44bf933054bdca183e77'

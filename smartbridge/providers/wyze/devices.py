@@ -570,13 +570,23 @@ class WyzeSensor(WyzeDevice, BaseSensor):
     def __init__(self, provider, sensor):
         super(BaseSensor, self).__init__(provider, sensor)
 
+    @property
+    def rssi(self):
+        return self._get_property('rssi')
+
+    @property
+    def voltage(self):
+        return self._get_property('voltage')
+
     @staticmethod
     def props():
         return {
-            "power_state": ("P3", "int"),
+            "notification": ("P1", "int"),
             "available": ("P5", "int"),
-            "rssi": ("P1303", "str"),
-            "voltage": ("P1304", "str"),
+            # "": ("P6", ""),
+            # "": ("P1303", ""),
+            "rssi": ("P1304", "int"),
+            "voltage": ("P1329", "int"),
         }
 
 
@@ -585,13 +595,45 @@ class WyzeContactSensor(WyzeSensor, BaseContactSensor):
     def __init__(self, provider, sensor):
         super(WyzeContactSensor, self).__init__(provider, sensor)
 
+    @property
+    def open_close_state(self):
+        return self._get_property('open_close_state')
+
     @staticmethod
     def props():
-        return WyzeSensor.props.update({
-            "open_close_state": ("P1301", "str"),
-            "rssi": ("P1304", "str"),
-            "voltage": ("P1329", "str"),
+        """
+        See: com.hualai.dws3u.device.WyzeEventSettingPage
+        """
+        props = WyzeSensor.props()
+        props.update({
+            "power_state": ("P3", "int"),
+            "open_close_state": ("P1301", "int"),
+            "open_notification": ("P1306", "int"), # "opens"
+            "close_notification": ("P1307", "int"), # "closes"
+            "open_notification_delay": ("P1308", "int"), # "left open"
+            "close_notification_delay": ("P1309", "int"), # "left closed"
+            "open_notification_time": ("P1310", ""),
+            "close_notification_time": ("P1311", ""),
+            # "": ("P1312", ""),
+            # "": ("P1321", ""),
+            # "": ("P1322", ""),
+            # "": ("P1323", ""),
+            # "": ("P1324", ""),
         })
+        return props
+
+    def _get_property(self, name, default=None):
+        if name in self._device:
+            return self._device[name]
+        elif 'data' in self._device and 'property_list' in self._device['data']:
+            for property in self._device['data']['property_list']:
+                prop_def = WyzeContactSensor.props().get(name)
+                if (prop_def[0] == property['pid']):
+                    return property['value']
+        elif 'device_params' in self._device and name in self._device['device_params']:
+            return self._device['device_params'][name]
+
+        return default
 
 
 class WyzeMotionSensor(WyzeSensor, BaseMotionSensor):
@@ -599,10 +641,44 @@ class WyzeMotionSensor(WyzeSensor, BaseMotionSensor):
     def __init__(self, provider, sensor):
         super(WyzeMotionSensor, self).__init__(provider, sensor)
 
+    @property
+    def motion_state(self):
+        return self._get_property('motion_state')
+
     @staticmethod
     def props():
-        return WyzeSensor.props.update({
-            "motion_state": ("P1302", "str"),
-            "rssi": ("P1304", "str"),
-            "voltage": ("P1329", "str"),
+        """
+        See: com.hualai.pir3u.device.WyzeEventSettingPage
+        """
+        props = WyzeSensor.props()
+        props.update({
+            "": ("P2", "int"),
+            "": ("P4", "int"),
+            # "": ("P1300", ""), not used
+            "motion_state": ("P1302", "int"),
+            "motion_notification": ("P1314", "int"), # "detects motion"
+            "clear_notification": ("P1315", "int"), # "becomes clear"
+            # "": ("P1316", "int"),
+            # "": ("P1317", "int"),
+            # "": ("P1318", "int"),
+            # "": ("P1319", "int"),
+            # "": ("P1320", "int"),
+            # "": ("P1325", "int"),
+            # "": ("P1326", "int"),
+            # "": ("P1327", "int"),
+            # "": ("P1328", "int"),
         })
+        return props
+
+    def _get_property(self, name, default=None):
+        if name in self._device:
+            return self._device[name]
+        elif 'data' in self._device and 'property_list' in self._device['data']:
+            for property in self._device['data']['property_list']:
+                prop_def = WyzeMotionSensor.props().get(name)
+                if (prop_def[0] == property['pid']):
+                    return property['value']
+        elif 'device_params' in self._device and name in self._device['device_params']:
+            return self._device['device_params'][name]
+
+        return default

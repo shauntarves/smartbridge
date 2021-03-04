@@ -5,11 +5,15 @@ from smartbridge.base.services import BaseSessionService
 from smartbridge.base.services import BaseBulbService
 from smartbridge.base.services import BasePlugService
 from smartbridge.base.services import BaseVacuumService
+from smartbridge.base.services import BaseContactSensorService
+from smartbridge.base.services import BaseMotionSensorService
 from smartbridge.interfaces.exceptions import ProviderConnectionException, InvalidValueException
 
 from .devices import WyzeBulb
 from .devices import WyzePlug
 from .devices import WyzeVacuum
+from .devices import WyzeContactSensor
+from .devices import WyzeMotionSensor
 
 log = logging.getLogger(__name__)
 
@@ -231,5 +235,41 @@ class WyzeVacuumService(BaseVacuumService):
                 vacuum_mac, vacuum_model, props['control_type'], suction_level_code)
             self.provider.wyze_client.create_user_vacuum_event(
                 props['event_id'], 1)
+        except ProviderConnectionException:
+            return None
+
+
+class WyzeContactSensorService(BaseContactSensorService):
+
+    def __init__(self, provider):
+        super(WyzeContactSensorService, self).__init__(provider)
+
+    def list(self):
+        wyze_contact_sensors = self.provider.wyze_client.list_contact_sensors()
+        return [WyzeContactSensor(self.provider, contact_sensor) for contact_sensor in wyze_contact_sensors]
+
+    def get(self, contact_sensor_mac):
+        try:
+            contact_sensor = self.provider.wyze_client.get_contact_sensor(
+                contact_sensor_mac)
+            return WyzeContactSensor(self.provider, contact_sensor)
+        except ProviderConnectionException:
+            return None
+
+
+class WyzeMotionSensorService(BaseMotionSensorService):
+
+    def __init__(self, provider):
+        super(WyzeMotionSensorService, self).__init__(provider)
+
+    def list(self):
+        wyze_motion_sensors = self.provider.wyze_client.list_motion_sensors()
+        return [WyzeMotionSensor(self.provider, motion_sensor) for motion_sensor in wyze_motion_sensors]
+
+    def get(self, motion_sensor_mac):
+        try:
+            motion_sensor = self.provider.wyze_client.get_motion_sensor(
+                motion_sensor_mac)
+            return WyzeMotionSensor(self.provider, motion_sensor)
         except ProviderConnectionException:
             return None
